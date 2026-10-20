@@ -41,6 +41,12 @@ def get_pending_tasks():
     conn.close()
     return pending
 
+def get_next_pending_task():
+    conn, cursor = get_db_resource()
+    cursor.execute("SELECT * FROM tasks WHERE status = 'pending' ORDER BY task_id ASC LIMIT 1")
+    pending = cursor.fetchone()
+    conn.close()
+    return pending 
 
 def get_connection():
     connection = sqlite3.connect("c2_lab.db")

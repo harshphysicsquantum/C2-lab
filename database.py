@@ -21,18 +21,33 @@ def add_task(task_type):
 
 def update_task_status(task_id, new_status):
     conn, cursor = get_db_resource()
-    status = ["pending", "completed", "running"]
-    if new_status in status:
-        cursor.execute("""UPDATE tasks SET status = ? WHERE task_id = ?""", (new_status, task_id))
+
+    task = get_task_by_id(task_id)
+
+    if task is None:
+        print("Task not found")
+        conn.close()
+        return
+
+    current_status = task[2]
+
+    if (current_status == "pending" and new_status == "running") or \
+       (current_status == "running" and new_status == "completed") or \
+       (current_status == 'running' and new_status == 'failed'):
+
+        cursor.execute(
+            "UPDATE tasks SET status = ? WHERE task_id = ?",
+            (new_status, task_id)
+        )
         conn.commit()
-        if cursor.rowcount == 0:
-            print("Task not found")
-        else:
-            print("Task updated successfully")
-        conn.close()
+        print("Task updated successfully")
+
     else:
-        print("Invalid status")
-        conn.close()
+        print("Invalid status transition")
+
+    conn.close()
+
+
 
 def get_pending_tasks():
     conn, cursor = get_db_resource()
